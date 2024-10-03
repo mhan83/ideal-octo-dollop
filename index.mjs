@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import { basename } from 'node:path';
 import os from 'node:os';
+import path from 'node:path';
 import { Readable } from 'node:stream';
 import { finished } from 'node:stream/promises';
 import { promisify } from 'node:util';
@@ -12,17 +13,18 @@ const exec = promisify(child_process.exec);
  * @param {string} url 
  * @param {string} dest 
  */
-async function download(url) {
-  const dest = `./${basename(url)}`;
+async function download(url, dest = './') {
+  const destFile = path.join(dest, basename(url));
+
   console.time('download');
 
   const res = await fetch(url);
-  const fileStream = fs.createWriteStream(dest);
+  const fileStream = fs.createWriteStream(destFile);
   await finished(Readable.fromWeb(res.body).pipe(fileStream));
 
   console.timeEnd('download');
 
-  return dest;
+  return destFile;
 }
 
 /**
@@ -33,7 +35,7 @@ async function unzip(source, dest = './') {
   console.time('unzip');
 
   await exec(`unzip -q -o ${source}`, {
-    cwd: dest,
+    cwd: path.dirname(dest),
   });
 
   console.timeEnd('unzip');
@@ -43,17 +45,22 @@ async function unzipWin(source, dest = './') {
   console.time('unzip');
 
   await exec(`Expand-Archive -Path ${source}`, {
-    cwd: dest,
+    cwd: path.dirname(dest),
     shell: 'powershell.exe',
   });
 
   console.timeEnd('unzip');
 }
 
+const urlArg = process.argv[2];
+const destArg = process.argv[3] ?? './';
 
-const dest = await download(process.argv[2]);
+console.log(`downloading ${urlArg} to ${destArg}`);
+console.log();
+
+const destFile = await download(urlArg, destArg);
 if (os.platform().startsWith('win')) {
-  await unzipWin(dest);
+  await unzipWin(destFile);
 } else {
-  await unzip(dest);
+  await unzip(destFile);
 }
