@@ -34,7 +34,10 @@ async function download(url, dest = './') {
 async function unzip(source, dest = './') {
   console.time('unzip');
 
-  await exec(`unzip -q -o ${source}`, {
+  // await exec(`unzip -q -o ${source}`, {
+  //   cwd: path.dirname(dest),
+  // });
+  await exec(`python extract.py ${source} ./`, {
     cwd: path.dirname(dest),
   });
 
@@ -59,8 +62,9 @@ console.log(`downloading ${urlArg} to ${destArg}`);
 console.log();
 
 const destFile = await download(urlArg, destArg);
-if (os.platform().startsWith('win')) {
-  await unzipWin(destFile);
-} else {
-  await unzip(destFile);
-}
+await unzip(destFile);
+// if (os.platform().startsWith('win')) {
+//   await unzipWin(destFile);
+// } else {
+//   await unzip(destFile);
+// }
