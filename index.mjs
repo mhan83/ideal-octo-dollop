@@ -44,7 +44,7 @@ async function unzip(source, dest = './') {
 async function unzipWin(source, dest = './') {
   console.time('unzip');
 
-  await exec(`Expand-Archive -Path ${source}`, {
+  await exec(`Expand-Archive -Force -Path ${source}`, {
     cwd: path.dirname(dest),
     shell: 'powershell.exe',
   });
