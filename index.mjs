@@ -733,9 +733,7 @@ let iter = packages.values();
 
 const downloadWorkers = Array(workers).fill(iter).map(async (iter) => {
   for (const p of iter) {
-    console.time(`downloading ${basename(p)}`);
     await download(p, dest);
-    console.timeEnd(`downloading ${basename(p)}`);
   }
 });
 
