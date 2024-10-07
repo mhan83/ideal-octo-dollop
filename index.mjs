@@ -734,7 +734,7 @@ const workers = parseInt(process.argv[2]) ?? 5;
 const root = process.argv[3] ?? './';
 const dest = join(root, 'packages');
 
-console.log(`testing with ${workers} workers downloading to ${dest}`);
+console.log(`downloading ${packages.length} packages with ${workers} workers to ${dest}`);
 
 await prep(dest);
 
@@ -746,9 +746,11 @@ const downloadWorkers = Array(workers).fill(iter).map(async (iter) => {
   }
 });
 
-console.time(`download ${packages.length} packages`);
+let start = new Date();
 await Promise.allSettled(downloadWorkers);
-console.timeEnd(`download ${packages.length} packages`);
+let end = new Date();
+
+const downloadTime = end - start;
 
 iter = packages.values();
 const extractWorkers = Array(workers).fill(iter).map(async (iter) => {
@@ -763,9 +765,16 @@ const extractWorkers = Array(workers).fill(iter).map(async (iter) => {
   }
 });
 
-console.time(`extract ${packages.length} packages`);
+console.log(`extracting ${packages.length} packages with ${workers} workers to ${dest}`);
+
+start = new Date();
 await Promise.allSettled(extractWorkers);
-console.timeEnd(`extract ${packages.length} packages`);
+end = new Date();
+const extractTime = end - start;
+
+console.log();
+console.log(`download: ${downloadTime / 1000}s (${Math.round(downloadTime / (downloadTime + extractTime) * 100)}%)`);
+console.log(`extract: ${extractTime / 1000}s (${Math.round(extractTime / (downloadTime + extractTime) * 100)}%)`);
 // 
 // /**
 //  * @param {string} source 
